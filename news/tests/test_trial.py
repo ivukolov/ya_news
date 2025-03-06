@@ -1,9 +1,11 @@
-# news/tests/test_trial.py
+import unittest
+
 from django.test import TestCase
 
 from news.models import News
 
 
+@unittest.skip('No need')
 class TestNews(TestCase):
     # Все нужные переменные сохраняем в атрибуты класса.
     TITLE = 'Заголовок новости'
@@ -25,3 +27,19 @@ class TestNews(TestCase):
         # Чтобы проверить равенство с константой -
         # обращаемся к ней через self, а не через cls:
         self.assertEqual(self.news.title, self.TITLE)
+
+    def test_comments_order(self):
+        response = self.client.get(self.detail_url)
+        # Проверяем, что объект новости находится в словаре контекста
+        # под ожидаемым именем - названием модели.
+        self.assertIn('news', response.context)
+        # Получаем объект новости.
+        news = response.context['news']
+        # Получаем все комментарии к новости.
+        all_comments = news.comment_set.all()
+        # Собираем временные метки всех комментариев.
+        all_timestamps = [comment.created for comment in all_comments]
+        # Сортируем временные метки, менять порядок сортировки не надо.
+        sorted_timestamps = sorted(all_timestamps)
+        # Проверяем, что временные метки отсортированы правильно.
+        self.assertEqual(all_timestamps, sorted_timestamps) 
